@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Tour</title>
+    <link rel="icon" type="image/x-icon" href="assets/CircleFilled.png">
+    <!-- <link rel="stylesheet" href="./styles/style.css"> -->
+     <style>
+        @font-face {
+    font-family: 'Neo Sans';
+    src: url('assets/NeoSans_Black.otf') format('otf');
+         /* url('fonts/NeoSans Black.otf') format('otf'); */
+    font-weight: normal;
+    font-style: normal;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    font-family: 'Neo Sans', sans-serif;
+}
+.container {
+width: 100%;
+height: 100%;
+}
+h1{
+    position: fixed;
+    color: #FFF;
+}
+.image-bar-container {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    height: 100px; /* Adjust the height to fit images */
+    overflow: hidden; /* Hide the overflow to create a sliding effect */
+    background-color: #333333e8;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.3);
+    display: flex;
+    justify-content: space-around;
+    /*align-items: center; /* Center the images vertically */
+    /*cursor: grab; /* Indicate draggable area */
+    user-select: none; /* Prevent text selection */
+}
+
+.image-bar {
+    display: flex;
+    align-items: space-around; /* Center the images vertically */
+    height: 100%; /* Ensure the image bar takes full height of the container */
+    transition: transform 0.2s ease-out; /* Smooth transition for the elastic effect */
+    /* margin: 100px 100px 100px 100px; */
+}
+
+.image-bar img {
+    height: 80px; /* Adjust the height as needed */
+    width: 160px; /* Adjust the width as needed */
+    margin: 10px 10px; /* Spacing between images */
+    transition: transform 0.3s; /* Smooth scaling effect on hover */
+}
+
+.image-container {
+    position: relative; /* Enable positioning of the number overlay */
+}
+
+.image-bar img:hover {
+    transform: scale(1.1); /* Slightly enlarge the image on hover */
+}
+
+.image-number {
+    position: absolute;
+    bottom: 15px;
+    left: 15px;
+    background-color: #000000b3;
+    color: white;
+    padding: 2px 5px;
+    font-size: 12px;
+    border-radius: 3px;
+    pointer-events: none; /* Make sure the number overlay does not interfere with clicking the image */
+}
+
+#fileInput {
+    display: none;
+}
+
+.loading-indicator {
+    position: fixed;
+    bottom: 100px;
+    left: 10px;
+    padding: 10px 20px;
+    /* background-color: rgba(46, 46, 46, 0.8); */
+    color: white;
+    border-radius: 5px;
+    display: none; /* Hide by default */
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.start-message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 10px 20px;
+    /* background-color: rgba(46, 46, 46, 0.8); */
+    color: white;
+    border-radius: 5px;
+    display: none; /* Hide by default */
+    z-index: 1000;
+    pointer-events: none;
+}
+
+/* Popup window */
+/* The popup container - hidden by default */
+.popup {
+    display: none;
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    border: 1px solid #ccc;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+    padding: 20px;
+    background-color: #fff;
+    z-index: 1000;
+    max-width: 80%;
+    min-width: 300px;
+    min-height: 100px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+/* The overlay */
+.overlay {
+    display: none;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+/* Button to close the popup */
+.close-btn {
+    cursor: pointer;
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-btn:hover,
+.close-btn:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Ensure the description text wraps and doesn't overflow */
+#popupDescription {
+    word-wrap: break-word;
+    white-space: pre-wrap; /* Preserves whitespace and allows wrapping */
+}
+
+#popupTitle {
+    font-family: 'Neo Sans', sans-serif;
+}
+
+/*Popup with options*/
+#popupContainer {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+}
+
+.popupBox {
+    background-color: #fff;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+    text-align: center;
+}
+
+.closeBtn {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.closeBtn:hover,
+.closeBtn:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.styledButton {
+    background-color: #404041;
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.styledSaveButton {
+    background-color: #2cad3d;
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s, transform 0.3s;
+}
+.styledButton:hover {
+    background-color: #5f5f5f;
+    transform: scale(1.05);
+}
+
+.styledSaveButton:hover {
+    background-color: #1ab82f;
+    transform: scale(1.05);
+}
+
+/*Delete Popup*/
+#deleteLocationPopupContainer {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+}
+
+#deleteNavigationPopupContainer {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+}
+
+.styledDeleteButton {
+    background-color: #ff3800;
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.styledDeleteButton:hover {
+    background-color: #ff3300;
+    transform: scale(1.05);
+}
+
+/*Progress Bar*/
+.progress-container {
+    display: none;
+    position: fixed;
+    width: 30%;
+    bottom: 100px;
+    right: 10px;
+    background-color: #f3f3f3;
+    border-radius: 5px;
+    margin: 10px 0;
+    padding: 3px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.progress-bar {
+    width: 0%;
+    height: 15px;
+    background-color: #4caf50;
+    border-radius: 5px;
+    text-align: center;
+    line-height: 15px;
+    color: white;
+}
+.dat-gui-textarea {
+      width: 100%;
+      height: 100px;
+      resize: none;
+    }
+    .dat-gui-links {
+      margin-top: 10px;
+      font-size: 0.9em;
+    }
+    .dat-gui-links a {
+      display: block;
+      color: blue;
+      text-decoration: underline;
+    }
+/* ViewerUI */
+.viewerButton {
+    display: none;
+    position: absolute;
+    bottom: 150px;
+    right: 20px;
+    padding: 15px 32px;
+    font-size: 16px;
+    background-color: #404041;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s, transform 0.3s;
+}
+</style>
+</head>
+<body>
+    <input type="file" id="fileInput" multiple accept="image/*">
+    <!-- <br> -->
+    <script src="../../node_modules/compressorjs/dist/compressor.min.js"></script>
+    <!-- <script src="./scripts/virtualtour.js" type="module"></script> -->
+    <script src="./scripts/scripts.js" type="module"></script>
+    <!-- <script src="./js/API.js" type="module"></script> -->
+    <!-- <script src="./js/DataController.js" type="module"></script> -->
+    <div class="container">
+        <!-- <h1>Virtual Tour</h1> -->
+    </div>
+    
+    <div class="image-bar-container">
+        <div class="image-bar" id="imageBar"></div>
+    </div>
+    <div id="loading-indicator" class="loading-indicator">
+        Loading...
+    </div>
+    <div id="start-message" class="start-message">
+        It looks like you've been given the wrong tour. Please select the correct tour.
+    </div>
+
+    <!-- Popup window -->
+    <!-- The overlay -->
+    <div id="overlay" class="overlay"></div>
+
+    <!-- The popup -->
+    <div id="popup" class="popup">
+        <span class="close-btn" id="closePopup">&times;</span>
+        <h2 id="popupTitle">        </h2>
+        <p id="popupDescription">       </p>
+    </div>
+
+    <!-- Popup with options -->
+    <div id="popupContainer" class="popupOverlay">
+        <div class="popupBox">
+            <span id="closePopupBtn" class="closeBtn">&times;</span>
+            <h2>Save Changes</h2>
+            <p id="savePopupDescription">Would you like to save your progress before navigating away?</p>
+            <button id="actionButton1" class="styledButton">Don't save</button>
+            <button id="actionButton2" class="styledSaveButton">Save</button>
+        </div>
+    </div>
+
+    <!-- Delete location popup -->
+    <div id="deleteLocationPopupContainer" class="popupOverlay">
+        <div class="popupBox">
+            <span id="closeDeleteLocationPopupButton" class="closeBtn">&times;</span>
+            <h2>Delete Location</h2>
+            <p id="deletePopupDescription">Are you sure you want to delete this location?</p>
+            <button id="canceldeleteLocationButton" class="styledButton">Cancel</button>
+            <button id="deleteLocationButton" class="styledDeleteButton">Delete</button>
+        </div>
+    </div>
+
+    <!-- Delete Navigation Element popup -->
+    <div id="deleteNavigationPopupContainer" class="popupOverlay">
+        <div class="popupBox">
+            <span id="closeDeleteNavigationPopupButton" class="closeBtn">&times;</span>
+            <h2>Delete Element</h2>
+            <p id="deletePopupDescription">Are you sure you want to delete the selected element?</p>
+            <button id="canceldeleteNavigationButton" class="styledButton">Cancel</button>
+            <button id="deleteNavigationButton" class="styledDeleteButton">Delete</button>
+        </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-container" id="progress-container">
+        <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    <!-- Enter VR Button -->
+    <button id="enterVRMode" class="viewerButton">Enter VR</button>
+</body>
+</html>

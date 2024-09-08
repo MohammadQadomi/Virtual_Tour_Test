@@ -1,0 +1,262 @@
+@font-face {
+    font-family: 'Neo Sans';
+    src: url('../../fonts/NeoSans_Black.otf') format('otf');
+         /* url('fonts/NeoSans Black.otf') format('otf'); */
+    font-weight: normal;
+    font-style: normal;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    font-family: 'Neo Sans', sans-serif;
+}
+.container {
+width: 100%;
+height: 100%;
+}
+h1{
+    position: fixed;
+    /* left: 50%; */
+    color: #FFF;
+}
+.image-bar-container {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    height: 100px; /* Adjust the height to fit images */
+    overflow: hidden; /* Hide the overflow to create a sliding effect */
+    background-color: #333333e8;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.3);
+    display: flex;
+    justify-content: space-around;
+    /*align-items: center; /* Center the images vertically */
+    /*cursor: grab; /* Indicate draggable area */
+    user-select: none; /* Prevent text selection */
+}
+
+.image-bar {
+    display: flex;
+    align-items: space-around; /* Center the images vertically */
+    height: 100%; /* Ensure the image bar takes full height of the container */
+    transition: transform 0.2s ease-out; /* Smooth transition for the elastic effect */
+    /* margin: 100px 100px 100px 100px; */
+}
+
+.image-bar img {
+    height: 80px; /* Adjust the height as needed */
+    width: 160px; /* Adjust the width as needed */
+    margin: 10px 10px; /* Spacing between images */
+    transition: transform 0.3s; /* Smooth scaling effect on hover */
+}
+
+.image-container {
+    position: relative; /* Enable positioning of the number overlay */
+}
+
+.image-bar img:hover {
+    transform: scale(1.1); /* Slightly enlarge the image on hover */
+}
+
+.image-number {
+    position: absolute;
+    bottom: 15px;
+    left: 15px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 2px 5px;
+    font-size: 12px;
+    border-radius: 3px;
+    pointer-events: none; /* Make sure the number overlay does not interfere with clicking the image */
+}
+
+#fileInput {
+    display: none;
+}
+
+.loading-indicator {
+    position: fixed;
+    bottom: 100px;
+    left: 10px;
+    padding: 10px 20px;
+    /* background-color: rgba(46, 46, 46, 0.8); */
+    color: white;
+    border-radius: 5px;
+    display: none; /* Hide by default */
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.start-message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 10px 20px;
+    /* background-color: rgba(46, 46, 46, 0.8); */
+    color: white;
+    border-radius: 5px;
+    display: none; /* Hide by default */
+    z-index: 1000;
+    pointer-events: none;
+}
+
+/* Popup window */
+/* The popup container - hidden by default */
+.popup {
+    display: none;
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    border: 1px solid #ccc;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+    padding: 20px;
+    background-color: #fff;
+    z-index: 1000;
+    max-width: 80%;
+    min-width: 300px;
+    min-height: 100px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+/* The overlay */
+.overlay {
+    display: none;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+/* Button to close the popup */
+.close-btn {
+    cursor: pointer;
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-btn:hover,
+.close-btn:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Ensure the description text wraps and doesn't overflow */
+#popupDescription {
+    word-wrap: break-word;
+    white-space: pre-wrap; /* Preserves whitespace and allows wrapping */
+}
+
+#popupTitle {
+    font-family: 'Neo Sans', sans-serif;
+}
+
+/*Popup with options*/
+#popupContainer {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+}
+
+.popupBox {
+    background-color: #fff;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+    text-align: center;
+}
+
+.closeBtn {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.closeBtn:hover,
+.closeBtn:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.styledButton {
+    background-color: #2e2e2e;
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.styledSaveButton {
+    background-color: #2cad3d;
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.styledButton:hover {
+    background-color: #5f5f5f;
+    transform: scale(1.05);
+}
+
+.styledSaveButton:hover {
+    background-color: #1ab82f;
+    transform: scale(1.05);
+}
+
+/*Progress Bar*/
+#centered-container {
+    text-align: center;
+}
+
+#progress-container {
+    width: 100%;
+    max-width: 400px; /* Adjust the max-width as needed */
+    background-color: #e0e0e0;
+    border-radius: 25px;
+    overflow: hidden;
+    margin: 20px 0;
+}
+
+#progress-bar {
+    width: 0%;
+    height: 30px;
+    background-color: #ff4c05;
+    border-radius: 25px 0 0 25px;
+}
