@@ -26,28 +26,21 @@ function init() {
     camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
     camera.layers.enable(1);
 
-    // Skybox geometry
-    const geometry = new THREE.BoxGeometry(100, 100, 100);
-    geometry.scale(1, 1, -1); // Invert the geometry on the x-axis so that all of the faces point inward
-
-    // Load the normal image as a texture
+    // Load the equirectangular panoramic texture
     const textureLoader = new THREE.TextureLoader();
-    const texture = textureLoader.load('assets/island.png');
+    textureLoader.load('assets/island.png', (texture) => {
+        // Convert equirectangular to cubemap
+        const cubeRenderTarget = new THREE.WebGLCubeRenderTarget(texture.image.height);
+        cubeRenderTarget.fromEquirectangularTexture(renderer, texture);
 
-    // Create materials with the same texture for all faces of the skybox
-    const materials = [];
-    for (let i = 0; i < 6; i++) {
-        materials.push(new THREE.MeshBasicMaterial({ map: texture }));
-    }
-
-    // Create the skybox mesh with the materials
-    const skyBox = new THREE.Mesh(geometry, materials);
-    skyBox.layers.set(1);
-    scene.add(skyBox);
+        // Set the scene's background to the cube map
+        scene.background = cubeRenderTarget.texture;
+    });
 
     // Resize event listener
     window.addEventListener('resize', onWindowResize);
 }
+
 
 function getTexturesFromAtlasFile( atlasImgUrl, tilesNum ) {
 	const textures = [];
