@@ -32,7 +32,7 @@ function init() {
 
     // Load the normal image as a texture
     const textureLoader = new THREE.TextureLoader();
-    const texture = textureLoader.load('assets/sun_temple_stripe_stereo.jpg');
+    const texture = textureLoader.load('assets/1.jpg');
 
     // Create materials with the same texture for all faces of the skybox
     const materials = [];
