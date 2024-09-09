@@ -32,7 +32,7 @@ function init() {
 
     // Load the normal image as a texture
     const textureLoader = new THREE.TextureLoader();
-    const texture = textureLoader.load('assets/1.jpg');
+    const texture = textureLoader.load('assets/island.png');
 
     // Create materials with the same texture for all faces of the skybox
     const materials = [];
