@@ -12,38 +12,43 @@ let renderer;
 let scene;
 init();
 function init() {
-	renderer = new THREE.WebGLRenderer();
-	renderer.setPixelRatio( window.devicePixelRatio );
-	renderer.setSize( window.innerWidth, window.innerHeight );
-	renderer.setAnimationLoop( animate );
-	renderer.xr.enabled = true;
-	renderer.xr.setReferenceSpaceType( 'local' );
-	document.body.appendChild( renderer.domElement );
-	document.body.appendChild( VRButton.createButton( renderer ) );
-	//
-	scene = new THREE.Scene();
-	camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 1000 );
-	camera.layers.enable( 1 );
-	const geometry = new THREE.BoxGeometry( 100, 100, 100 );
-	geometry.scale( 1, 1, - 1 );
-	const textures = getTexturesFromAtlasFile( 'assets/sun_temple_stripe_stereo.jpg', 12 );
-	// const textures = getTexturesFromAtlasFile( 'assets/Blank.png', 10 );
-	const materials = [];
-	for ( let i = 0; i < 6; i ++ ) {
-		materials.push( new THREE.MeshBasicMaterial( { map: textures[ i ] } ) );
-	}
-	const skyBox = new THREE.Mesh( geometry, materials );
-	skyBox.layers.set( 1 );
-	scene.add( skyBox );
-	const materialsR = [];
-	for ( let i = 6; i < 12; i ++ ) {
-		materialsR.push( new THREE.MeshBasicMaterial( { map: textures[ i ] } ) );
-	}
-	const skyBoxR = new THREE.Mesh( geometry, materialsR );
-	skyBoxR.layers.set( 2 );
-	scene.add( skyBoxR );
-	window.addEventListener( 'resize', onWindowResize );
+    renderer = new THREE.WebGLRenderer();
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setAnimationLoop(animate);
+    renderer.xr.enabled = true;
+    renderer.xr.setReferenceSpaceType('local');
+    document.body.appendChild(renderer.domElement);
+    document.body.appendChild(VRButton.createButton(renderer));
+
+    // Scene and camera setup
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
+    camera.layers.enable(1);
+
+    // Skybox geometry
+    const geometry = new THREE.BoxGeometry(100, 100, 100);
+    geometry.scale(1, 1, -1); // Invert the geometry on the x-axis so that all of the faces point inward
+
+    // Load the normal image as a texture
+    const textureLoader = new THREE.TextureLoader();
+    const texture = textureLoader.load('assets/sun_temple_stripe_stereo.jpg');
+
+    // Create materials with the same texture for all faces of the skybox
+    const materials = [];
+    for (let i = 0; i < 6; i++) {
+        materials.push(new THREE.MeshBasicMaterial({ map: texture }));
+    }
+
+    // Create the skybox mesh with the materials
+    const skyBox = new THREE.Mesh(geometry, materials);
+    skyBox.layers.set(1);
+    scene.add(skyBox);
+
+    // Resize event listener
+    window.addEventListener('resize', onWindowResize);
 }
+
 function getTexturesFromAtlasFile( atlasImgUrl, tilesNum ) {
 	const textures = [];
 	for ( let i = 0; i < tilesNum; i ++ ) {
