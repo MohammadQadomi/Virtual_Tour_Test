@@ -1,5 +1,7 @@
-import * as THREE from "../node_modules/three/build/three.module.js";
-import { VRButton } from '../node_modules/three/examples/jsm/webxr/VRButton.js';
+// import * as THREE from "../node_modules/three/build/three.module.js";
+// import { VRButton } from '../node_modules/three/examples/jsm/webxr/VRButton.js';
+import * as THREE from "./three.module.js";
+import { VRButton } from './VRButton.js';
 import { XRControllerModelFactory } from './XRControllerModelFactory.js';
 
 // import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.module.js';
@@ -17,6 +19,15 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.xr.enabled = true;
 document.body.appendChild(renderer.domElement);
 document.body.appendChild(VRButton.createButton(renderer));
+
+// Lighting setup
+const ambientLight = new THREE.AmbientLight(0x404040, 2); // Soft white light
+scene.add(ambientLight);
+
+const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
+directionalLight.position.set(5, 10, 7.5); // Position the light to cast shadows
+directionalLight.castShadow = true; // Enable shadows if needed
+scene.add(directionalLight);
 
 // Controller setup
 const controller = renderer.xr.getController(0);
@@ -39,25 +50,11 @@ const raycaster = new THREE.Raycaster();
 raycaster.camera = camera;
 const intersectedObjects = [];
 
-// Add objects to scene and intersectedObjects array
-// const box = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.2, 0.2), new THREE.MeshBasicMaterial({ color: 0x00ff00 }));
-// box.position.set(0, 1.5, -2);
-// scene.add(box);
-// intersectedObjects.push(box);
+CreateSprite('assets/arrow_3.png');
 
-// Create a sprite
-const spriteMap = new THREE.TextureLoader().load('assets/CircleFilled.png'); // Replace with your sprite image path
-const spriteMaterial = new THREE.SpriteMaterial({ map: spriteMap, color: 0xffffff });
-let sprite = new THREE.Sprite(spriteMaterial);
-sprite.scale.set(0.5, 0.5, 1); // Adjust the scale to fit your needs
-sprite.position.set(0, 1.5, -2); // Set sprite position
-scene.add(sprite);
-intersectedObjects.push(sprite);
-
-// Panorama image to skybox
 SetSkyboxImage('assets/island.png');
 
-
+// Skybox image (Panorama)
 function SetSkyboxImage(imagePath){
 	const textureLoader = new THREE.TextureLoader();
 	textureLoader.load(imagePath, (texture) => {
@@ -69,9 +66,25 @@ function SetSkyboxImage(imagePath){
 	});
 }
 
+
+function CreateSprite(imagePath){
+	const spriteMap = new THREE.TextureLoader().load(imagePath);
+	const spriteMaterial = new THREE.SpriteMaterial({ map: spriteMap, color: 0xffffff });
+	let sprite = new THREE.Sprite(spriteMaterial);
+	sprite.scale.set(1, 1, 1);
+	sprite.position.set(0, 1.5, -10);
+	scene.add(sprite);
+	intersectedObjects.push(sprite);
+}
+
 // Grip action function
 function triggerAction() {
     console.log('Trigger button pressed');
+	console.log(`object type: ${intersectedObject}`);
+
+	if(intersectedObject !== null){
+		SetSkyboxImage(`assets/1.JPG`);
+	}
 }
 
 // Handle grip button event
@@ -82,6 +95,8 @@ function animate() {
     renderer.setAnimationLoop(render);
 }
 
+let intersects;
+let intersectedObject;
 function render() {
     // Set the raycaster's origin and direction from the controller
     const tempMatrix = new THREE.Matrix4();
@@ -94,13 +109,14 @@ function render() {
     raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
 
     // Check intersections
-    const intersects = raycaster.intersectObjects(intersectedObjects);
+    intersects = raycaster.intersectObjects(intersectedObjects);
 
     if (intersects.length > 0) {
         ray.material.color.set(0xff0000); // Change ray color to red when intersecting
-		console.log(`object type: ${intersects[0].object}`);
+		intersectedObject = intersects[0].object;
     } else {
         ray.material.color.set(0x0000ff); // Change ray color to blue otherwise
+		intersectedObject = null;
     }
 
     renderer.render(scene, camera);
