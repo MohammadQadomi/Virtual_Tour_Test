@@ -72,7 +72,7 @@ textSprite.position.set(0, 2.3, -10); // Position the text above the sprite
 textSprite.rotation.set(0, 0, 0);
 scene.add(textSprite);
 
-SetSkyboxImage('assets/1.jpg');
+SetSkyboxImage('assets/island.png');
 
 // Skybox image (Panorama)
 function SetSkyboxImage(imagePath){
@@ -88,14 +88,22 @@ function SetSkyboxImage(imagePath){
 
 
 function CreateSprite(imagePath){
-	const spriteMap = new THREE.TextureLoader().load(imagePath);
-	const spriteMaterial = new THREE.SpriteMaterial({ map: spriteMap, color: 0xffffff });
-	let sprite = new THREE.Sprite(spriteMaterial);
-	sprite.scale.set(1, 1, 1);
-	sprite.position.set(0, 1.5, -10);
-	scene.add(sprite);
-	intersectedObjects.push(sprite);
-	sprite.rotation.set(0, 0, 0);
+	// const spriteMap = new THREE.TextureLoader().load(imagePath);
+	// const spriteMaterial = new THREE.SpriteMaterial({ map: spriteMap, color: 0xffffff });
+	// let sprite = new THREE.Sprite(spriteMaterial);
+	// sprite.scale.set(1, 1, 1);
+	// sprite.position.set(0, 1.5, -10);
+	// scene.add(sprite);
+	// intersectedObjects.push(sprite);
+	// sprite.rotation.set(0, 0, 0);
+	const planeGeometry = new THREE.PlaneGeometry(0.5, 0.5);
+	const planeTexture = new THREE.TextureLoader().load(imagePath);
+	const planeMaterial = new THREE.MeshBasicMaterial({ map: planeTexture, transparent: true });
+	const planeMesh = new THREE.Mesh(planeGeometry, planeMaterial);
+	planeMesh.position.set(0, 1.5, -2); // Set plane position
+	scene.add(planeMesh);
+	intersectedObjects.push(planeMesh);
+
 }
 
 // Grip action function
@@ -104,7 +112,7 @@ function triggerAction() {
 	console.log(`object type: ${intersectedObject}`);
 
 	if(intersectedObject !== null){
-		SetSkyboxImage(`assets/island.png`);
+		SetSkyboxImage(`assets/1.jpg`);
 	}
 }
 
