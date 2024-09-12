@@ -51,26 +51,11 @@ const raycaster = new THREE.Raycaster();
 raycaster.camera = camera;
 const intersectedObjects = [];
 
-CreateSprite('assets/arrow_3.png');
+let plane = CreatePlaneTexture('assets/arrow_3.png');
+let hoverText = CreateHoverText();
 
-// Create a canvas for the text
-const canvas = document.createElement('canvas');
-const context = canvas.getContext('2d');
-canvas.width = 256;
-canvas.height = 64;
-context.font = 'Bold 30px Arial';
-context.fillStyle = 'white';
-context.textAlign = 'center';
-context.fillText('Arrow', canvas.width / 2, canvas.height / 2);
 
-// Create texture from canvas
-const textTexture = new THREE.CanvasTexture(canvas);
-const textMaterial = new THREE.SpriteMaterial({ map: textTexture });
-const textSprite = new THREE.Sprite(textMaterial);
-textSprite.scale.set(1.5, 0.375, 1);
-textSprite.position.set(0, 2.3, -10); // Position the text above the sprite
-textSprite.rotation.set(0, 0, 0);
-scene.add(textSprite);
+
 
 SetSkyboxImage('assets/island.png');
 
@@ -88,23 +73,49 @@ function SetSkyboxImage(imagePath){
 
 
 function CreateSprite(imagePath){
-	// const spriteMap = new THREE.TextureLoader().load(imagePath);
-	// const spriteMaterial = new THREE.SpriteMaterial({ map: spriteMap, color: 0xffffff });
-	// let sprite = new THREE.Sprite(spriteMaterial);
-	// sprite.scale.set(1, 1, 1);
-	// sprite.position.set(0, 1.5, -10);
-	// scene.add(sprite);
-	// intersectedObjects.push(sprite);
-	// sprite.rotation.set(0, 0, 0);
-	const planeGeometry = new THREE.PlaneGeometry(0.5, 0.5);
+	const spriteMap = new THREE.TextureLoader().load(imagePath);
+	const spriteMaterial = new THREE.SpriteMaterial({ map: spriteMap, color: 0xffffff });
+	let sprite = new THREE.Sprite(spriteMaterial);
+	sprite.scale.set(1, 1, 1);
+	sprite.position.set(0, 1.5, -10);
+	scene.add(sprite);
+	intersectedObjects.push(sprite);
+	sprite.rotation.set(0, 0, 0);
+}
+
+function CreatePlaneTexture(imagePath){
+	const planeGeometry = new THREE.PlaneGeometry(1, 1);
 	const planeTexture = new THREE.TextureLoader().load(imagePath);
 	const planeMaterial = new THREE.MeshBasicMaterial({ map: planeTexture, transparent: true });
 	const planeMesh = new THREE.Mesh(planeGeometry, planeMaterial);
-	planeMesh.position.set(0, 1.5, -2); // Set plane position
+	planeMesh.position.set(0, 1.5, -10); // Set plane position
 	scene.add(planeMesh);
 	intersectedObjects.push(planeMesh);
-
+	return planeMesh;
 }
+
+function CreateHoverText(){
+	// Create a canvas for the text
+	const canvas = document.createElement('canvas');
+	const context = canvas.getContext('2d');
+	canvas.width = 256;
+	canvas.height = 64;
+	context.font = 'Bold 30px Arial';
+	context.fillStyle = 'white';
+	context.textAlign = 'center';
+	context.fillText('Arrow', canvas.width / 2, canvas.height / 2);
+
+	// Create texture from canvas
+	const textTexture = new THREE.CanvasTexture(canvas);
+	const textMaterial = new THREE.MeshBasicMaterial({ map: textTexture, transparent: true });
+	const textPlane = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 0.375), textMaterial); // Scale text plane
+	textPlane.position.set(0, 2.5, -10); // Position the text above the plane mesh
+	scene.add(textPlane);
+
+	return textPlane;
+}
+
+let destinationImagePath = 'assets/1.jpg';
 
 // Grip action function
 function triggerAction() {
@@ -112,7 +123,16 @@ function triggerAction() {
 	console.log(`object type: ${intersectedObject}`);
 
 	if(intersectedObject !== null){
-		SetSkyboxImage(`assets/1.jpg`);
+		SetSkyboxImage(destinationImagePath);
+		scene.remove(plane);
+		scene.remove(hoverText);
+
+		if(destinationImagePath === 'assets/1.jpg'){
+			destinationImagePath = 'assets/island.png';
+		}
+		else{
+			destinationImagePath = 'assets/1.jpg';
+		}
 	}
 }
 
