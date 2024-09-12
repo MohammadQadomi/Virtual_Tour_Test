@@ -17,6 +17,7 @@ const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 // Setup XR support
 renderer.xr.enabled = true;
+renderer.xr.setReferenceSpaceType( 'local' );
 document.body.appendChild(renderer.domElement);
 document.body.appendChild(VRButton.createButton(renderer));
 
@@ -52,7 +53,26 @@ const intersectedObjects = [];
 
 CreateSprite('assets/arrow_3.png');
 
-SetSkyboxImage('assets/island.png');
+// Create a canvas for the text
+const canvas = document.createElement('canvas');
+const context = canvas.getContext('2d');
+canvas.width = 256;
+canvas.height = 64;
+context.font = 'Bold 30px Arial';
+context.fillStyle = 'white';
+context.textAlign = 'center';
+context.fillText('Arrow', canvas.width / 2, canvas.height / 2);
+
+// Create texture from canvas
+const textTexture = new THREE.CanvasTexture(canvas);
+const textMaterial = new THREE.SpriteMaterial({ map: textTexture });
+const textSprite = new THREE.Sprite(textMaterial);
+textSprite.scale.set(1.5, 0.375, 1);
+textSprite.position.set(0, 2.3, -10); // Position the text above the sprite
+textSprite.rotation.set(0, 0, 0);
+scene.add(textSprite);
+
+SetSkyboxImage('assets/1.jpg');
 
 // Skybox image (Panorama)
 function SetSkyboxImage(imagePath){
@@ -75,6 +95,7 @@ function CreateSprite(imagePath){
 	sprite.position.set(0, 1.5, -10);
 	scene.add(sprite);
 	intersectedObjects.push(sprite);
+	sprite.rotation.set(0, 0, 0);
 }
 
 // Grip action function
@@ -83,11 +104,11 @@ function triggerAction() {
 	console.log(`object type: ${intersectedObject}`);
 
 	if(intersectedObject !== null){
-		SetSkyboxImage(`assets/1.JPG`);
+		SetSkyboxImage(`assets/island.png`);
 	}
 }
 
-// Handle grip button event
+// Handle trigger button event
 controller.addEventListener('selectstart', triggerAction);
 
 // Animation loop
