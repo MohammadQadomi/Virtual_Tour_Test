@@ -127,7 +127,7 @@ function triggerAction() {
 		scene.remove(plane);
 		scene.remove(hoverText);
 
-		if(destinationImagePath === 'assets/1.jpg'){
+		if(destinationImagePath === 'assets/1.JPG'){
 			destinationImagePath = 'assets/island.png';
 		}
 		else{
