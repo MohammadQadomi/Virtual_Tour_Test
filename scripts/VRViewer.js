@@ -4,14 +4,23 @@ import * as THREE from "./three.module.js";
 import { VRButton } from './VRButton.js';
 import { XRControllerModelFactory } from './XRControllerModelFactory.js';
 
+import {Location, Arrow, Hotspot, ImageStorage} from "./Location.js";
+
 // import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.module.js';
 // import { VRButton } from 'https://cdn.jsdelivr.net/npm/three@0.155.0/examples/jsm/webxr/VRButton.js';
 // import * as PANOLENS from 'https://cdn.jsdelivr.net/npm/panolens@0.12.1/build/panolens.module.js';
 // import * as PANOLENS from '/node_modules/panolens/build/panolens.module.js';
 
+
+
+let intersects;
+let intersectedObject;
+let VRNavigationElements = [];
+
+function Start(){
 // Scene setup
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 100);
+const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 5000);
 camera.layers.enable(1);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -26,8 +35,8 @@ const ambientLight = new THREE.AmbientLight(0x404040, 2); // Soft white light
 scene.add(ambientLight);
 
 const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
-directionalLight.position.set(5, 10, 7.5); // Position the light to cast shadows
-directionalLight.castShadow = true; // Enable shadows if needed
+directionalLight.position.set(5, 10, 7.5); // Position the light
+// directionalLight.castShadow = true; // Enable shadows
 scene.add(directionalLight);
 
 // Controller setup
@@ -51,13 +60,16 @@ const raycaster = new THREE.Raycaster();
 raycaster.camera = camera;
 const intersectedObjects = [];
 
-let plane = CreatePlaneTexture('assets/arrow_3.png');
-let hoverText = CreateHoverText();
 
 
 
+function InitialLocation(){
+	let tempArrow = new Arrow('', 'assets/arrow_3.png', 'مبنى ادارة جوال', new THREE.Vector3(3900, 488, -960), 0, 200, '', 'test destination', '#ffffff' );
 
-SetSkyboxImage('assets/island.png');
+	let arrows = [tempArrow];
+	VRNewLocation('assets/Blank.png', arrows);
+}
+InitialLocation();
 
 // Skybox image (Panorama)
 function SetSkyboxImage(imagePath){
@@ -71,67 +83,84 @@ function SetSkyboxImage(imagePath){
 	});
 }
 
-
-function CreateSprite(imagePath){
-	const spriteMap = new THREE.TextureLoader().load(imagePath);
-	const spriteMaterial = new THREE.SpriteMaterial({ map: spriteMap, color: 0xffffff });
-	let sprite = new THREE.Sprite(spriteMaterial);
-	sprite.scale.set(1, 1, 1);
-	sprite.position.set(0, 1.5, -10);
-	scene.add(sprite);
-	intersectedObjects.push(sprite);
-	sprite.rotation.set(0, 0, 0);
-}
-
-function CreatePlaneTexture(imagePath){
-	const planeGeometry = new THREE.PlaneGeometry(1, 1);
+function CreatePlaneTexture(camera, imagePath, position, scale, rotation ,destination){
+	const planeGeometry = new THREE.PlaneGeometry(scale, scale);
 	const planeTexture = new THREE.TextureLoader().load(imagePath);
 	const planeMaterial = new THREE.MeshBasicMaterial({ map: planeTexture, transparent: true });
 	const planeMesh = new THREE.Mesh(planeGeometry, planeMaterial);
-	planeMesh.position.set(0, 1.5, -10); // Set plane position
+	planeMesh.userData = {
+		type: 'arrow',
+		destinationId: destination
+	};
+	planeMesh.position.set(position.x, position.y, position.z); // Set plane position
+	planeMesh.lookAt(camera.position);
 	scene.add(planeMesh);
+
 	intersectedObjects.push(planeMesh);
 	return planeMesh;
 }
 
-function CreateHoverText(){
+function CreateHoverText(text, position, color = 'white'){
 	// Create a canvas for the text
 	const canvas = document.createElement('canvas');
 	const context = canvas.getContext('2d');
-	canvas.width = 256;
-	canvas.height = 64;
-	context.font = 'Bold 30px Arial';
-	context.fillStyle = 'white';
+	canvas.width = 512;
+	canvas.height = 128;
+	context.font = '20px Neo Sans';
+	context.fillStyle = color;
 	context.textAlign = 'center';
-	context.fillText('Arrow', canvas.width / 2, canvas.height / 2);
+	context.fillText(text , canvas.width / 2, canvas.height / 2);
 
 	// Create texture from canvas
 	const textTexture = new THREE.CanvasTexture(canvas);
 	const textMaterial = new THREE.MeshBasicMaterial({ map: textTexture, transparent: true });
-	const textPlane = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 0.375), textMaterial); // Scale text plane
-	textPlane.position.set(0, 2.5, -10); // Position the text above the plane mesh
+	const textPlane = new THREE.Mesh(new THREE.PlaneGeometry(1500 * 2, 375 * 2), textMaterial); // Scale text plane
+	textPlane.position.set(position.x, position.y + 250 ,position.z); // Position the text above the plane mesh
+	textPlane.lookAt(camera.position);
 	scene.add(textPlane);
 
 	return textPlane;
 }
 
-let destinationImagePath = 'assets/1.jpg';
+function VRCreateArrow(camera, arrow){
+	VRNavigationElements.push(CreateHoverText(arrow.title, arrow.position));
+	VRNavigationElements.push(CreatePlaneTexture(camera, arrow.imagePath, arrow.position, arrow.scale, arrow.rotation, arrow.destination));
+}
 
 // Grip action function
 function triggerAction() {
     console.log('Trigger button pressed');
-	console.log(`object type: ${intersectedObject}`);
-
 	if(intersectedObject !== null){
-		SetSkyboxImage(destinationImagePath);
-		scene.remove(plane);
-		scene.remove(hoverText);
+		if (intersectedObject.userData.type === "arrow") {
+			console.log('The intersected object is an Arrow.');
+			console.log(`arrow destination: ${intersectedObject.userData.destinationId}`);
 
-		if(destinationImagePath === 'assets/1.JPG'){
-			destinationImagePath = 'assets/island.png';
+			VRNewLocation("assets/island.png"); // For testing
 		}
-		else{
-			destinationImagePath = 'assets/1.jpg';
+		else if (intersectedObject.userData.type === "hotspot") {
+			console.log('The intersected object is a hotspot.');
+			console.log(`hotspot description: ${intersectedObject.userData.destinationId}`);
+		}
+		else {
+			console.log('The intersected object is not a navigation element!');
+		}
+	}
+}
+
+function VRNewLocation(imagePath, arrows = null){
+	// Change scene image
+	SetSkyboxImage(imagePath);
+
+	// Clear navigation elements
+	for(let i = 0; i < VRNavigationElements.length; i++){
+		scene.remove(VRNavigationElements[i]);
+	}
+	VRNavigationElements = [];
+
+	// Create scene arrows
+	if(arrows !== null){
+		for(let i = 0; i < arrows.length; i++){
+			VRCreateArrow(camera, arrows[i]);
 		}
 	}
 }
@@ -144,8 +173,6 @@ function animate() {
     renderer.setAnimationLoop(render);
 }
 
-let intersects;
-let intersectedObject;
 function render() {
     // Set the raycaster's origin and direction from the controller
     const tempMatrix = new THREE.Matrix4();
@@ -155,11 +182,10 @@ function render() {
     raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
 
     // Set ray direction
-    raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
+    raycaster.ray.direction.set(0, 0, -10000).applyMatrix4(tempMatrix);
 
     // Check intersections
     intersects = raycaster.intersectObjects(intersectedObjects);
-
     if (intersects.length > 0) {
         ray.material.color.set(0xff0000); // Change ray color to red when intersecting
 		intersectedObject = intersects[0].object;
@@ -167,8 +193,10 @@ function render() {
         ray.material.color.set(0x0000ff); // Change ray color to blue otherwise
 		intersectedObject = null;
     }
-
     renderer.render(scene, camera);
 }
 
 animate();
+}
+
+export {Start};
